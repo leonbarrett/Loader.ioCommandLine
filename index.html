@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Loader.iocommandline by leonbarrett</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Loader.iocommandline</h1>
+        <p>Loader.io Command Line wrapper</p>
+
+        <p class="view"><a href="https://github.com/leonbarrett/Loader.ioCommandLine">View the Project on GitHub <small>leonbarrett/Loader.ioCommandLine</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/leonbarrett/Loader.ioCommandLine/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/leonbarrett/Loader.ioCommandLine/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/leonbarrett/Loader.ioCommandLine">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>What</h1>
+
+<p>This is a simple tool to run and view load test using the Loader.io service.</p>
+
+<p>You'll need an API key from Loader.io first</p>
+
+<h1>How</h1>
+
+<p>To run a load test starting with 0 connections, up to 10 connections over a 30 section period against <a href="http://thisisleon.co.uk">http://thisisleon.co.uk</a> try this:</p>
+
+<p><code>$ loaderio -m test:create -u http://thisisleon.co.uk -l 0-10-30 --name Demo</code></p>
+
+<h1>Installation</h1>
+
+<p>Ensure you have PHP installed as CLI. Run <code>php -v</code> to check</p>
+
+<p>Download the file and make it executable</p>
+
+<p><code>chmod a+x loaderio</code></p>
+
+<p>Either place it in your path, or add to your path.</p>
+
+<p><code>echo 'export PATH=YOURPATHHERE:$PATH' &gt;&gt; ~/.profile</code></p>
+
+<p>When using the tool for the 1st time you will be prompted to add in your Loader.io api key.</p>
+
+<p>You can also add a loader_cli.config to your home directory containing:</p>
+
+<p>`[account_settings]
+api_key = API_KEY</p>
+
+<p>Type <code>loaderio --help</code> for help.</p>
+
+<h1>Methods</h1>
+
+<p><code>$loaderio -m test:create -u URL -l LOAD -name NAME</code> - will start a load test against the specified URL. Load test settings in the form [from]-[to]-<a>time_in_sec</a></p>
+
+<p><code>$loaderio -m test:list</code> - return a list of tests</p>
+
+<p><code>$loaderio -m test:view -t TEST_ID</code> - view results for a test</p>
+
+<p><code>$loaderio -m app:list</code> - return a list of apps</p>
+
+<p><code>$loaderio -m app:create -h HOST_NAME</code> - create an app with the specified host name</p>
+
+<p><code>$loaderio -m app:verify -h HOST_NAME -v {url|dns}</code> - verify an app</p>
+
+<p><code>$loaderio -m app:view -h HOST_NAME</code> - view an app</p>
+
+<h1>Parameters</h1>
+
+<p>These are global parameters that will work across the methods:</p>
+
+<ul>
+<li>-m or --method        = the method name. This is required to actually do anything. See above for a list of available methods</li>
+<li>-h or --host          = hostname/app ID to test</li>
+<li>-v or --verify        = method for verification (url or dns)</li>
+<li>-u or --url           = url to test</li>
+<li>-l or --load          = load test settings in the form [from]-[to]-<a>time_in_sec</a>
+</li>
+<li>-n or --name          = test name</li>
+<li>-t or --test          = test ID</li>
+</ul><h1>Thanks</h1>
+
+<p>Thanks to <a href="https://github.com/pete-otaqui/ClipClop">https://github.com/pete-otaqui/ClipClop</a> for the library to parse the command line options</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/leonbarrett">leonbarrett</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-2691011-13");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
