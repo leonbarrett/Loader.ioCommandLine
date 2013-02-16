@@ -626,22 +626,14 @@ class Loaderio
 		case "unverified":
 		$out = "[0;31m";
 		break;
-		case "label-orange":
-		$out = "[0;31m";
-		break;		
-		case "label-yellow":
-		$out = "[0;33m"; 
-		break;
+
 		case "verified":
+		case "success":
+		case "complete":
 		$out = "[0;32m";
 		break;
-		case "label-blue":
-		$out = "[0;34m";
-		break;
-		case "label-pink":
-		$out = "[0;31m";
-		break;
-		case "label-grey":
+
+		default:
 		$out = "[0;37m";
 		break;			
 	}
@@ -726,7 +718,7 @@ class Loaderio
 		
 		$this->clipclop->addOption(array(
 		    'short' => 't',
-		    'long' => 'tes',
+		    'long' => 'test',
 		    'value' => TRUE,
 		    'help' => 'Test ID',
 		));
@@ -745,14 +737,28 @@ class Loaderio
 		    'help' => 'Load',
 		));
 		
-		$help = $this->clipclop->getOption('h');
+		$this->clipclop->addOption(array(
+		    'short' => 'v',
+		    'long' => 'verify',
+		    'value' => TRUE,
+		    'help' => 'Verify Method',
+		));
+		
+		$this->clipclop->addOption(array(
+		    'short' => 'n',
+		    'long' => 'name',
+		    'value' => TRUE,
+		    'help' => 'Test Name',
+		));
+		
+		$help = $this->clipclop->getOption('help');
 		
 		if($help) self::help();
 		
 		$method = $this->clipclop->getOption('m');
 		
 		if (!in_array($method, self::$_valid_cli_params))
-			throw new Exception($method . ' is not a valid type! Type "beanstalk --help" for instructions on how to use this script!');
+			throw new Exception($method . ' is not a valid type! Type "loaderio --help" for instructions on how to use this script!');
 		
 		
 		switch($method){
@@ -761,78 +767,28 @@ class Loaderio
 				self::list_apps();
 			break;
 			
-			//end
-						
-			case 'repo':
-				self::_display_message('ERROR', 'Method depreciated. Please type beanstalk help for more info');
+			case 'app:create':
+				self::create_app();
 			break;
 			
-			case 'repo:create':
-				self::create_repo_wizard();
+			case 'app:verify':
+				self::verify_app();
 			break;
 			
-			case 'create-git':
-				self::_display_message('ERROR', 'Method depreciated. Please use beanstalk repo:create');
+			case 'app:view':
+				self::view_app();
 			break;
 			
-			case 'create-empty':
-				self::_display_message('ERROR', 'Method depreciated. Please use beanstalk repo:create');
+			case 'test:list':
+				self::list_tests();
 			break;
 			
-			case 'repo:deploy':
-				self::deploy_release('single');
+			case 'test:create':
+				self::create_test();
 			break;
 			
-			case 'repo:deployall':
-				self::deploy_release('all');
-			break;
-			
-			case 'repo:list':
-				self::list_repos();
-			break;
-			
-			case 'repo:info':
-				self::fetch_repo();
-			break;
-			
-			case 'repo:changes':
-				self::fetch_changes();
-			break;
-			
-			case 'repo:releases':
-				self::fetch_releases();
-			break;
-			
-			case 'repo:search':
-				self::search_repos();
-			break;
-			
-			case 'repo:init':
-				self::init_repo();
-			break;
-			
-			case 'account:config':
-				self::update_config();
-			break;
-			
-			case 'web:dashboard':
-				self::open_url('');
-			break;
-			
-			case 'web:repos':
-				self::open_url('repositories');
-			break;
-			
-			case 'web:preview':
-				self::web_preview();
-			break;
-			
-			case 'keys:view':
-				self::keys_view();
-			break;
-			
-			case 'keys:create':
-				self::keys_create();
+			case 'test:view':
+				self::view_test();
 			break;
 
 		}
@@ -841,6 +797,114 @@ class Loaderio
 		return TRUE;
 	} // End of init
 	
+	
+	/**
+	 * create_app function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	function create_app(){
+		
+		$options = array();
+		
+		$options['app'] = $this->clipclop->getOption('h');
+		
+		self::_display_message('', '******************** CREATE APP ********************');
+		
+		if(!$options['app']){
+			
+			self::_display_message('', 'Please enter a host name: ');
+			$options['app'] = self::_get_input();
+		}
+				
+		$app = self::make_api_post_call('apps',$options);
+		
+		self::display_errors($app);
+				
+		$_message = $this->colourOutput('●',$app->message).' ';
+		$_message .= 'App Created';
+		$_message .= ' ('.$app->app_id.')';
+		$_message .= "\n";
+		$_message .= 'Verification ('.$app->verification_id.')';	
+		
+		self::_display_message('', $_message);
+		
+	}
+	
+	
+	/**
+	 * verify_app function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	function verify_app(){
+		
+		$options = array();
+		
+		$options['app'] = $this->clipclop->getOption('h');
+		$options['method'] = $this->clipclop->getOption('v');
+		
+		self::_display_message('', '******************** Verify APP ********************');
+		
+		if(!$options['app']){
+			
+			self::_display_message('', 'Please enter a host name: ');
+			$options['app'] = self::_get_input();
+		}
+		
+		if(!$options['method']){
+			
+			self::_display_message('', 'Please enter a method type: ');
+			$options['method'] = self::_get_input();
+		}
+				
+		$app = self::make_api_post_call('apps/'.$options['app'].'/verify',$options);
+		
+		self::display_errors($app);
+				
+		$_message = $this->colourOutput('●',$app->message).' ';
+		$_message .= 'App Verified';
+
+		self::_display_message('', $_message);
+
+	}
+	
+	
+	/**
+	 * view_app function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	function view_app(){
+		
+		$options = array();
+		
+		$options['app'] = $this->clipclop->getOption('h');
+		
+		self::_display_message('', '******************** VIEW APP ********************');
+		
+		if(!$options['app']){
+			
+			self::_display_message('', 'Please enter a host name: ');
+			$options['app'] = self::_get_input();
+		}
+		
+				
+		$app = self::make_api_call('apps/'.$options['app'],$options);
+		
+		self::display_errors($app);
+				
+		$_message = $this->colourOutput('●',$app->status).' ';
+		$_message .= $app->app;
+		$_message .= ' ('.$app->app_id.')';	
+
+		self::_display_message('', $_message);
+
+	}
+
 	
 	/**
 	 * list_apps function.
@@ -868,6 +932,126 @@ class Loaderio
 		
 	}
 			
+	
+	/**
+	 * create_test function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	function create_test(){
+		
+		$options = array();
+		
+		$options['url'] = $this->clipclop->getOption('u');
+		$options['load'] = $this->clipclop->getOption('l');
+		$options['name'] = $this->clipclop->getOption('n');
+		
+		self::_display_message('', '******************** CREATE TEST ********************');
+		
+		if(!$options['url']){
+			
+			self::_display_message('', 'Please enter a host name: ');
+			$options['url'] = self::_get_input();
+		}
+		
+		if(!$options['load']){
+			
+			self::_display_message('', 'Please enter a load value: ');
+			$options['load']= self::_get_input();
+		}
+		
+		if(!$options['name']){
+			
+			self::_display_message('', 'Please enter a test name: ');
+			$options['name']= self::_get_input();
+		}
+		
+		$test = self::make_api_post_call('tests',$options);
+		
+		self::display_errors($test);
+				
+		$_message = $this->colourOutput('●',$test->message).' ';
+		$_message .= 'Test Created';
+		$_message .= ' ('.$test->test_id.')';	
+		
+		self::_display_message('', $_message);
+		
+	}
+	
+	
+	/**
+	 * list_tests function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	function list_tests(){
+		
+		self::_display_message('', '******************** LIST TESTS ********************');
+		
+		$tests = self::make_api_call('tests');
+		
+		self::display_errors($tests);
+		
+		foreach($tests as $test){
+			
+			$_message = $this->colourOutput('●',$test->status).' ';
+			$_message .= $test->name;
+			$_message .= ' ('.$test->test_id.')';	
+			$_message .= "\n";
+			
+			fwrite(STDOUT, $_message);
+		}
+		
+	}
+	
+	
+	/**
+	 * view_test function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	function view_test(){
+		
+		$options = array();
+		
+		$options['test_id'] = $this->clipclop->getOption('t');
+		
+		self::_display_message('', '******************** VIEW TEST ********************');
+		
+		if(!$options['test_id']){
+			
+			self::_display_message('', 'Please enter a test id: ');
+			$options['test_id'] = self::_get_input();
+		}
+				
+		$test = self::make_api_call('tests/'.$options['test_id'].'/results',$options);
+		
+		self::display_errors($test);
+		
+		$_message = $this->colourOutput('●',$test->status).' ';
+		$_message .= $test->name.' ('.$test->url.')';
+
+		self::_display_message('', $_message);
+		
+		$results = $test->results_data;
+		
+		$mask = "|%-10.10s |%-30.30s \n";
+		printf($mask, 'Created', date('Y-m-d @ H:i',strtotime($results->started_at)));
+		printf($mask, 'Duration', $test->duration);
+		printf($mask, 'From', $test->from);
+		printf($mask, 'To', $test->to);
+		printf($mask, 'Type', $test->request_type);
+		printf($mask, 'Success', $results->success);
+		printf($mask, 'Error', $results->error);
+		printf($mask, 'Timeout', $results->timeout_error);
+		printf($mask, 'Tx', self::_format_size($results->data_sent));
+		printf($mask, 'Rx', self::_format_size($results->data_received));
+				
+	}
+	
 	
 	/**
 	 * update_config function.
@@ -901,8 +1085,29 @@ class Loaderio
 	 * @return void
 	 * @author Leon Barrett
 	 */
-	public function help()
-	{	
+	public function help(){
+	
+		self::_display_message('', '== Loaderio
+
+This is a command line tool to control Loader.io (http://loader.io/) tests and apps.
+
+');	
+	
+		$mask = "|%-12.12s |%-30.30s \n";
+		printf($mask, 'Command', 'Description');
+		printf($mask, 'help', 'Display this message');
+		printf($mask, 'app:list', 'Display a list of apps');
+		printf($mask, 'app:view', 'Display an app');
+		printf($mask, 'app:create', 'Create a new app');
+		printf($mask, 'app:verify', 'Verify an app');
+		printf($mask, 'test:list', 'List tests');
+		printf($mask, 'test:create', 'Create a new test');
+		printf($mask, 'test:view', 'View a tests results');
+		
+		die();
+		
+		
+/*
 		$string = "\n";
 		$string .= "== Loaderio
 
@@ -917,6 +1122,7 @@ app:list									# List your apps
 		$string .= "\n";
 		
 		self::_display_message('', $string);
+*/
 		
 	} // End of help
 	
@@ -964,6 +1170,29 @@ app:list									# List your apps
 			return;
 	} // End of _display_message
 	
+	
+	/**
+	 * format_size function.
+	 * 
+	 * @access protected
+	 * @static
+	 * @param mixed $size
+	 * @return void
+	 */
+	protected static function _format_size($size){
+	    
+	    $units = explode(' ','B KB MB GB TB PB');
+	    
+        $mod = 1024;
+
+        for ($i = 0; $size > $mod; $i++) {
+            $size /= $mod;
+        }
+
+        $endIndex = strpos($size, ".")+3;
+
+        return substr( $size, 0, $endIndex).' '.$units[$i];
+    }
 	
 	/**
 	 * _get_input function.
@@ -1031,10 +1260,10 @@ app:list									# List your apps
 	 */
 	public function display_errors($call){
 		
-		if($call->error){
+		if($call->message == 'error'){
 			self::_display_message('error', 'Errors',TRUE);
 			
-			foreach($call->error as $error):
+			foreach($call->errors as $error):
 				self::_display_message('error', $error,TRUE);
 			endforeach;
 			
@@ -1113,9 +1342,20 @@ app:list									# List your apps
 	 * @return void
 	 * @author Leon Barrett
 	 */
-	public function make_api_post_call($api_params,$post_string){
+	public function make_api_post_call($api_params,$options = array()){
 	
 	  	$url = "https://api.loader.io/v1/" . $api_params;
+	  	
+	  	$post_array = array();
+		
+		foreach($options as $key => $val){
+			
+			$post_array[] = $key.'='.$val;
+			
+		}
+		
+		$post_string = implode('&', $post_array);
+	  	
 	
 		$ch = NULL;
 		$result = NULL;
